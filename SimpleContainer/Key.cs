@@ -40,7 +40,7 @@ namespace SimpleContainer
 
         public override int GetHashCode()
         {
-            var hashCode = this.GetHashCode();
+            var hashCode = this.Registry.GetHashCode();
             for (int index = 0; index < this.GenericArguments.Length; index++)
             {
                 hashCode ^= this.GenericArguments[index].GetHashCode();

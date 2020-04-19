@@ -33,6 +33,7 @@ namespace MyContainer
             GetServiceTwice<IBaz>(cat2);
             GetServiceTwice<IQux>(cat2);
 
+            Console.ReadLine();
         }
     }
 }
