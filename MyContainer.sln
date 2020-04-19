@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyContainer", "MyContainer\MyContainer.csproj", "{E125B505-E85B-488D-B06F-407B0E2C9F1E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleContainer", "SimpleContainer\SimpleContainer.csproj", "{9473AE9F-7A87-45C2-8582-5A76C5403E68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,5 +15,9 @@ Global
 		{E125B505-E85B-488D-B06F-407B0E2C9F1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E125B505-E85B-488D-B06F-407B0E2C9F1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E125B505-E85B-488D-B06F-407B0E2C9F1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9473AE9F-7A87-45C2-8582-5A76C5403E68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9473AE9F-7A87-45C2-8582-5A76C5403E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9473AE9F-7A87-45C2-8582-5A76C5403E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9473AE9F-7A87-45C2-8582-5A76C5403E68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
