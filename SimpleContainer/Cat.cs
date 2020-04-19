@@ -84,7 +84,8 @@ namespace SimpleContainer
             // 需要容器托管生命周期的对象。（容器级别单例）
             object GetOrCreate(ConcurrentDictionary<Key, object>services, ConcurrentStack<IDisposable> disposables)
             {
-                if(services.TryGetValue(key, out object service))
+                object service;
+                if(services.TryGetValue(key, out service))
                 {
                     return service;
                 }
@@ -100,7 +101,7 @@ namespace SimpleContainer
             }
 
         }
-
+        
         public object GetService(Type serviceType)
         {
             this.EnsureNotDisposed();
@@ -139,6 +140,16 @@ namespace SimpleContainer
             return this._registries.TryGetValue(serviceType, out registry) ? this.GetServiceCore(registry, new Type[0]) : null;
 
 
+        }
+
+        public object GetService<TService>()
+        {
+            return this.GetService(typeof(TService));
+        }
+
+        public Cat CreateChild()
+        {
+            return new Cat(this);
         }
 
         public void Dispose()
