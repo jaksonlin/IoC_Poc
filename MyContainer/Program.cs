@@ -176,11 +176,16 @@ namespace MyContainer
     
         static void WhichServiceProvider()
         {
+            //注意，BuildServiceProvider是用此处的ServiceCollection来创建一个新的ServiceProviderEngine
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<SingletonService>()
                 .AddScoped<ScopedService>()
                 .BuildServiceProvider();
+            //而这个serviceProvider是ServiceProviderEngine的实例，这个实例实现的IServiceProvider接口时依赖于内部的rootScope，因此此处的ReferencesEquals是不成立的。
             var rootScope = serviceProvider.GetService<IServiceProvider>();
+            //它实现这个接口是一种设计模型，以扩展自身更多的功能。它并不仅仅是为了做IServiceProvider。真正仅仅做IServiceProvider的是它内部的rootScope(IServiceProvider)。
+            Debug.Assert(!ReferenceEquals(rootScope, serviceProvider));
+            //根容器创建Scope都使用IServiceScopeFactory.
             var rootScopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
             using (var scope = serviceProvider.CreateScope())
             {
@@ -191,10 +196,10 @@ namespace MyContainer
                 Debug.Assert(ReferenceEquals(childContainer, childContainer.GetRequiredService<IServiceProvider>()));
                 Debug.Assert(ReferenceEquals(childContainer, scopedService.RequestServices));
                 Debug.Assert(ReferenceEquals(rootScope, singletonService.ApplicationServices));
-                //注意，从root创建的scope，你拿IServiceScopeFactory，它依然会从root去创建新的scope，也就是说所有的子容器里创建scope的时候，依然是用root的IServiceScopeFactory。子容器之间不存在父子关系。
+                //注意，从root创建的scope里拿IServiceScopeFactory，它依然会是rootScopeFactory。也就是说所有的子容器之间不存在父子关系。
                 //所有子容器的父容器都是root。注意：所谓子容器，本身是被Scope包裹的。
-                var test = childContainer.GetRequiredService<IServiceScopeFactory>();
-                Debug.Assert(ReferenceEquals(rootScopeFactory, test));
+                var childScopeFactory = childContainer.GetRequiredService<IServiceScopeFactory>();
+                Debug.Assert(ReferenceEquals(rootScopeFactory, childScopeFactory));
             }
         }
     }
