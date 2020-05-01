@@ -63,6 +63,7 @@ namespace SimpleContainer
         // 结合：类型的生命周期，以及范型构造的时候的情况，真正调用registry中的工厂完成构建，并管理他们的生命周期。
         private object GetServiceCore(ServiceRegistry registry, Type[] genericArguments)
         {
+            // 构建托管对象在容器中的索引
             var key = new Key(registry, genericArguments);
             var serviceType = registry.ServiceType;
             switch (registry.LifeTime)
@@ -73,6 +74,7 @@ namespace SimpleContainer
                     return GetOrCreate(this._services, this._disposables);
                 case LifeTime.Transient:
                     var service = registry.Factory(this, genericArguments);
+                    // 注意当构建容器对象时，不要将其自身的dispose放入列表当中
                     if(service is IDisposable disposable && disposable != this)
                     {
                         this._disposables.Push(disposable);
@@ -114,6 +116,7 @@ namespace SimpleContainer
             // 列表类型范型 IEnumerable<T> type
             if(serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
+                // IEnumerable<T>只有一个泛型类型
                 var elementType = serviceType.GetGenericArguments()[0];
                 // 如果我们不知道T要如何构造对话，就返回一个空的array；
                 if (!this._registries.TryGetValue(elementType, out registry)){

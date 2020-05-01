@@ -2,9 +2,9 @@
 
 namespace SimpleContainer
 {
-    // key：主要负责范型管理（非范型的时候GenericArgment为空。
-    // 范型涉及两个部分：1. 范型的类型；2. 范型类型当中的（封锁)类型。
-    // 当我们需要管理单例的时候，就需要严谨的类型信息管理。
+    // key：主要负责类型管理，尤其是泛型类型（非范型的时候GenericArgment为空。
+    // 范型涉及两个部分：1. 范型的类型（ServiceRegistry里）；2. 范型类型当中的（封锁)类型。（这里的GenericArguments）
+    // 当我们需要容器托管类型的生命周期的时候，就需要严谨的类型定位信息，因此这里重写了Equals, GetHashCode
     // GenericArguments其实是从范型对应的Type推导的，也不需要用户提供。type.GetGenricArguments。
     internal class Key : IEquatable<Key>
     {
