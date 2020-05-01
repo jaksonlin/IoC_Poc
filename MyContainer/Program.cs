@@ -12,7 +12,7 @@ namespace MyContainer
         static void Main(string[] args)
         {
 
-            SelectionOfConstructor();
+            WhichServiceProvider();
             Console.ReadLine();
 
 
@@ -173,5 +173,41 @@ namespace MyContainer
             provider.GetService<IQux>();
 
         }
+    
+        static void WhichServiceProvider()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton<SingletonService>()
+                .AddScoped<ScopedService>()
+                .BuildServiceProvider();
+            var rootScope = serviceProvider.GetService<IServiceProvider>();
+            var rootScopeFactory = serviceProvider.GetService<IServiceScopeFactory>();
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var childContainer = scope.ServiceProvider;
+                var singletonService = childContainer.GetRequiredService<SingletonService>();
+                var scopedService = childContainer.GetRequiredService<ScopedService>();
+
+                Debug.Assert(ReferenceEquals(childContainer, childContainer.GetRequiredService<IServiceProvider>()));
+                Debug.Assert(ReferenceEquals(childContainer, scopedService.RequestServices));
+                Debug.Assert(ReferenceEquals(rootScope, singletonService.ApplicationServices));
+                //注意，从root创建的scope，你拿IServiceScopeFactory，它依然会从root去创建新的scope，也就是说所有的子容器里创建scope的时候，依然是用root的IServiceScopeFactory。子容器之间不存在父子关系。
+                //所有子容器的父容器都是root。注意：所谓子容器，本身是被Scope包裹的。
+                var test = childContainer.GetRequiredService<IServiceScopeFactory>();
+                Debug.Assert(ReferenceEquals(rootScopeFactory, test));
+            }
+        }
     }
+
+    class SingletonService
+    {
+        public IServiceProvider ApplicationServices { get; }
+        public SingletonService(IServiceProvider serviceProvider) => ApplicationServices = serviceProvider;
+    }
+    class ScopedService
+    {
+        public IServiceProvider RequestServices { get; }
+        public ScopedService(IServiceProvider serviceProvider) => RequestServices = serviceProvider;
+    }
+
 }
