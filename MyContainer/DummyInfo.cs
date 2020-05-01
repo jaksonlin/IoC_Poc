@@ -22,14 +22,14 @@ namespace MyContainer
     public class Qux:Base, IQux { }
 
     public class FooBar<T1, T2> : IFooBar<T1, T2> {
-        public FooBar(IFoo foo, IBar bar)
+        public FooBar(T1 foo, T2 bar)
         {
             this.foo = foo;
             this.bar = bar;
         }
 
-        public IFoo foo { get; }
-        public IBar bar { get; }
+        public T1 foo { get; }
+        public T2 bar { get; }
     }
     public class DummyInfo
     {

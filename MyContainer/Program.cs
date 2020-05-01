@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 //using SimpleContainer;
 
 namespace MyContainer
@@ -11,7 +12,7 @@ namespace MyContainer
         static void Main(string[] args)
         {
 
-            PreventLeak();
+            TryAddEnumerableCheckAndReplace();
             Console.ReadLine();
 
 
@@ -136,6 +137,27 @@ namespace MyContainer
             //失败，是因为IFooBar是root容器上的单例，按上面的注册，它依赖Scoped的IFoo和IBar， 如此会引发内存泄漏
             ResoleServiceG(root, typeof(IFooBar<IFoo,IBar>));
 
+        }
+        
+        static void TryAddEnumerableCheckAndReplace()
+        {
+            var services = new ServiceCollection();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IFooBar<IFoo, IBar>), typeof(FooBar<IFoo,IBar>)));
+            Debug.Assert(services.Count == 1);
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IFooBar<IFoo, IBar>), typeof(FooBar<IFoo, IBar>)));
+            Debug.Assert(services.Count == 1);
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IFooBar<IFoo, IBar>), new FooBar<IFoo,IBar>(new Foo(), new Bar())));
+            Debug.Assert(services.Count == 1);
+            Func<IServiceProvider, FooBar<IFoo,IBar>> factory4FooBar = _ => new FooBar<IFoo, IBar>(new Foo(), new Bar());
+            Func<IServiceProvider, IFooBar<IFoo, IBar>> factory4IFooBar = _ => new FooBar<IFoo, IBar>(new Foo(), new Bar());
+            var sd = ServiceDescriptor.Singleton(typeof(IFooBar<IFoo, IBar>), factory4FooBar);
+            services.TryAddEnumerable(sd);
+            Debug.Assert(services.Count == 1);
+            //此处会抛出ArgumentException,因为这里是定义了IFooBar<IFoo,IBar> 的工厂，但工厂的func里解析为IFooBar<IFoo, IBar>映射为IFooBar<IFoo, IBar>,与services里的IFooBar<IFoo, IBar>映射为FooBar<IFoo, IBar>是不可区分的。
+            //services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IFooBar<IFoo, IBar>), factory4IFooBar));
+            //因此，可以用Replace重新定义
+            services.Replace(ServiceDescriptor.Singleton(typeof(IFooBar<IFoo, IBar>), factory4IFooBar));
+            Debug.Assert(services.Count == 1);
         }
     }
 }
