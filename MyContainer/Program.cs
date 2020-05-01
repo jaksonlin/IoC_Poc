@@ -12,7 +12,7 @@ namespace MyContainer
         static void Main(string[] args)
         {
 
-            TryAddEnumerableCheckAndReplace();
+            SelectionOfConstructor();
             Console.ReadLine();
 
 
@@ -158,6 +158,20 @@ namespace MyContainer
             //因此，可以用Replace重新定义
             services.Replace(ServiceDescriptor.Singleton(typeof(IFooBar<IFoo, IBar>), factory4IFooBar));
             Debug.Assert(services.Count == 1);
+        }
+
+        static void SelectionOfConstructor()
+        {
+            var provider = new ServiceCollection()
+                .AddTransient<IFoo, Foo>()
+                .AddTransient<IBar, Bar>()
+                .AddTransient<IQux, Qux>()
+                .BuildServiceProvider();
+            //select second，原因是，第二个构造函数的参数组成的集合，是所有其他构造函数的参数的集合的超集。比如第一个构造函数的参数集合是（IFoo)，是(IFoo, IBar)的子集。
+            //不选第三个的原因是容器不知道如何构造IBaz。
+            //选择构造函数的原则就是：这个构造函数的参数集合"最全，最多"并且任何一个其他构造函数的参数的集合，都是它的子集。
+            provider.GetService<IQux>();
+
         }
     }
 }

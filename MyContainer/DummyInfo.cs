@@ -19,7 +19,13 @@ namespace MyContainer
     public class Baz:Base, IBaz { }
 
 //    [MapTo(typeof(IQux), LifeTime.Root)]
-    public class Qux:Base, IQux { }
+    public class Qux:Base, IQux {
+        public Qux(IFoo foo) => Console.WriteLine("Select first constructor");
+
+        public Qux(IFoo foo, IBar bar) => Console.WriteLine("Select second constructor");
+
+        public Qux(IFoo foo, IBar bar, IBaz baz) => Console.WriteLine("Select third constructor");
+    }
 
     public class FooBar<T1, T2> : IFooBar<T1, T2> {
         public FooBar(T1 foo, T2 bar)
