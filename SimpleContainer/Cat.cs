@@ -75,15 +75,16 @@ namespace SimpleContainer
                 case LifeTime.Transient:
                     var service = registry.Factory(this, genericArguments);
                     // 注意当构建容器对象时，不要将其自身的dispose放入列表当中
+                    // 即使是Transient，如果它是IDisposable的，也是容器Dispose时才释放。
                     if(service is IDisposable disposable && disposable != this)
                     {
                         this._disposables.Push(disposable);
                     }
                     return service;
                 default:
-                    throw new Exception($@"LifeTIme not valid: {registry.LifeTime}");
+                    throw new Exception($@"LifeTime not valid: {registry.LifeTime}");
             }
-            // 需要容器托管生命周期的对象。（容器级别单例）
+            
             object GetOrCreate(ConcurrentDictionary<Key, object>services, ConcurrentStack<IDisposable> disposables)
             {
                 object service;
