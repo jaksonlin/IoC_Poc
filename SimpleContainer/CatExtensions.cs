@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace SimpleContainer
 {
@@ -70,14 +72,7 @@ namespace SimpleContainer
                 // 构造范型，注意type是传递进来的。
                 type = type.MakeGenericType(genericArguments);
             }
-            var constructors = type.GetConstructors();
-            if(constructors.Length == 0)
-            {
-                throw new InvalidOperationException($@"Cannot create an instance of type {type} which has no public constructor");
-            }
-
-            var constructor = constructors.FirstOrDefault(item => item.GetCustomAttributes(false).OfType<InjectionAttribute>().Any());
-            constructor ??= constructors.First();
+            var constructor = SelectionOfConsturctor(cat, type);
             var parameters = constructor.GetParameters();
             if (parameters.Length == 0)
             {
@@ -89,6 +84,71 @@ namespace SimpleContainer
                 arguments[index] = cat.GetService(parameters[index].ParameterType);
             }
             return constructor.Invoke(arguments);
+        }
+
+        private static ConstructorInfo SelectionOfConsturctor(Cat cat, Type type)
+        {
+            var constructors = type.GetConstructors();
+            if (constructors.Length == 0)
+            {
+                throw new InvalidOperationException($@"Cannot create an instance of type {type} which has no public constructor");
+            }
+            // if it is using attribute, will override the below superset rules.
+            var constructor = constructors.FirstOrDefault(item => item.GetCustomAttributes(false).OfType<InjectionAttribute>().Any());
+            if (constructor != null)
+            {
+                return constructor;
+            }
+            
+            // find the superset-parameter constructor
+            var rDict = new Dictionary<int, HashSet<Type>>();
+            
+            for(int i = 0;i< constructors.Length; i++)
+            {
+                var paramInfos = constructors[i].GetParameters();
+                var hset = new HashSet<Type>();
+                hset.AddRange(from x in paramInfos where cat._registries.ContainsKey(x.ParameterType) select x.ParameterType);
+                //有参数无法解析的构造函数不选
+                if(hset.Count == paramInfos.Length)
+                {
+                    rDict.Add(i, hset);
+                }
+            }
+            if (rDict.Count == 1)
+            {
+                return constructors[rDict.Keys.First()];
+            }
+            else
+            {
+                foreach(var item in rDict)
+                {
+                    var setToCompare = item.Value;
+                    var isSuperSetOfAll = true;
+                    foreach(var kv in rDict)
+                    {
+                        if (!setToCompare.IsSupersetOf(kv.Value))
+                        {
+                            isSuperSetOfAll = false;
+                            break;
+                        }
+                    }
+                    if (isSuperSetOfAll)
+                    {
+                        return constructors[item.Key];
+                    }
+                }
+                var sb = new StringBuilder();
+                foreach(var item in rDict.Values)
+                {
+                    sb.AppendLine("(");
+                    foreach (var parameter in item)
+                    {
+                        sb.Append($"{parameter.FullName} ");
+                    }
+                    sb.AppendLine(")");
+                }
+                throw new InvalidOperationException($"unable to choose constructor for type {type.FullName}. {Environment.NewLine} {sb.ToString()}");
+            }
         }
     }
 }

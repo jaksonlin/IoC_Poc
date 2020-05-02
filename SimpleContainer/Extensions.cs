@@ -17,5 +17,13 @@ namespace SimpleContainer
                 _ => LifeTime.Transient,
             };
         }
+
+        public static void AddRange<T>(this HashSet<T> ts, IEnumerable<T> list)
+        {
+            foreach(var item in list)
+            {
+                ts.Add(item);
+            }
+        }
     }
 }

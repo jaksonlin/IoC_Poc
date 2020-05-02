@@ -7,6 +7,7 @@ namespace SimpleContainer
 {
     public class CatServiceProviderFactory : IServiceProviderFactory<CatBuilder>
     {
+        //将用户定义的IServiceCollection导入
         public CatBuilder CreateBuilder(IServiceCollection services)
         {
             var cat = new Cat();
@@ -27,7 +28,7 @@ namespace SimpleContainer
             }
             return new CatBuilder(cat);
         }
-
+        //采用参数依赖的方式形成业务链，令用户必须先调用CreateBuilder，才能获得CatBuilder，才能调用此函数。别无他法。
         public IServiceProvider CreateServiceProvider(CatBuilder containerBuilder)
         {
             return containerBuilder.BuildServiceProvider();

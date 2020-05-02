@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleContainer;
+using System;
 //using SimpleContainer;
 
 namespace MyContainer
@@ -15,19 +16,22 @@ namespace MyContainer
     }
 
     public class Foo : Base, IFoo { }
-    public class Bar:Base, IBar { }
-    public class Baz:Base, IBaz { }
+    public class Bar : Base, IBar { }
+    public class Baz : Base, IBaz { }
 
-//    [MapTo(typeof(IQux), LifeTime.Root)]
-    public class Qux:Base, IQux {
+    [MapTo(typeof(IQux), LifeTime.Root)]
+    public class Qux : Base, IQux
+    {
         public Qux(IFoo foo) => Console.WriteLine("Select first constructor");
 
         public Qux(IFoo foo, IBar bar) => Console.WriteLine("Select second constructor");
 
         public Qux(IFoo foo, IBar bar, IBaz baz) => Console.WriteLine("Select third constructor");
+
     }
 
-    public class FooBar<T1, T2> : IFooBar<T1, T2> {
+    public class FooBar<T1, T2> : IFooBar<T1, T2>
+    {
         public FooBar(T1 foo, T2 bar)
         {
             this.foo = foo;

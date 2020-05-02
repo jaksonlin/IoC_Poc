@@ -6,6 +6,8 @@ using System.Text;
 
 namespace SimpleContainer
 {
+    //Builder的核心要义在于对外提供IServiceScopeFactory！使得使用容器构建对象处理服务时，能够有统一的Scope管理。
+    //事实上，IoC容器的重点在于：定义每一个服务处理时的业务对象的构建。他们都在一次业务处理的过程中由Scope进行管理。
     public class CatBuilder
     {
         private readonly Cat _cat;
@@ -17,7 +19,11 @@ namespace SimpleContainer
             _cat.Register<IServiceScopeFactory>(c => new ServiceScopeFactory(c.CreateChild()), LifeTime.Transient);
         }
 
-        public IServiceProvider BuildServiceProvider() => _cat;
+        public IServiceProvider BuildServiceProvider()//ServiceProviderOptions options)
+        {
+            //此处还要补充Option
+            return _cat;
+        }
 
         public CatBuilder Register(Assembly assembly)
         {

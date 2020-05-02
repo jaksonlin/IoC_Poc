@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SimpleContainer;
 //using SimpleContainer;
 
 namespace MyContainer
@@ -12,7 +13,7 @@ namespace MyContainer
         static void Main(string[] args)
         {
 
-            WhichServiceProvider();
+            UsingContainerDotNetWay();
             Console.ReadLine();
 
 
@@ -200,6 +201,41 @@ namespace MyContainer
                 //所有子容器的父容器都是root。注意：所谓子容器，本身是被Scope包裹的。
                 var childScopeFactory = childContainer.GetRequiredService<IServiceScopeFactory>();
                 Debug.Assert(ReferenceEquals(rootScopeFactory, childScopeFactory));
+            }
+        }
+
+        static void UsingContainerDotNetWay()
+        {
+            var serviceCollection = new ServiceCollection()
+                .AddTransient<IFoo, Foo>()
+                .AddScoped<IBar>(_ => new Bar())
+                .AddSingleton<IBaz>(new Baz());
+
+            var factory = new CatServiceProviderFactory();
+            var builder = factory.CreateBuilder(serviceCollection).Register(Assembly.GetEntryAssembly());
+            var container = factory.CreateServiceProvider(builder);
+            GetServices();
+            GetServices();
+            Console.WriteLine("\n Root container is disposed");
+            (container as IDisposable)?.Dispose();
+            void GetServices()
+            {
+                using(var scope = container.CreateScope())
+                {
+                    Console.WriteLine("\nService Scope is created");
+                    var child = scope.ServiceProvider;
+                    child.GetService<IFoo>();
+                    child.GetService<IBar>();
+                    child.GetService<IBaz>();
+                    child.GetService<IQux>();
+
+                    child.GetService<IFoo>();
+                    child.GetService<IBar>();
+                    child.GetService<IBaz>();
+                    child.GetService<IQux>();
+
+                    Console.WriteLine("Service Scope is disposed");
+                }
             }
         }
     }
