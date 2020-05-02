@@ -8,6 +8,12 @@ namespace MyContainer
     {
         static void Main(string[] args)
         {
+            UsingContainerDirectly();
+            Console.ReadLine();
+        }
+
+        static void UsingContainerDirectly()
+        {
             var root = new Cat().
                 Register<IFoo, Foo>(LifeTime.Transient).
                 Register<IBar>(_ => new Bar(), LifeTime.Self).
@@ -32,8 +38,8 @@ namespace MyContainer
             GetServiceTwice<IBar>(cat2);
             GetServiceTwice<IBaz>(cat2);
             GetServiceTwice<IQux>(cat2);
-
-            Console.ReadLine();
         }
+    
+
     }
 }
