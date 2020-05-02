@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
 namespace SimpleContainer
 {
-    //Builder的核心要义在于对外提供IServiceScopeFactory！使得使用容器构建对象处理服务时，能够有统一的Scope管理。
-    //事实上，IoC容器的重点在于：定义每一个服务处理时的业务对象的构建。他们都在一次业务处理的过程中由Scope进行管理。
+    //Builder的核心要义在于对外提供IServiceScopeFactory！使得使用容器构建对象处理服务时，能够管理好Scope。
+    //事实上，IoC容器的重点在于：定义每一个服务处理时的业务对象的构建。他们都在一次业务处理的过程中由Scope内的子容器进行管理。
     public class CatBuilder
     {
         private readonly Cat _cat;
@@ -23,6 +24,49 @@ namespace SimpleContainer
         {
             //此处还要补充Option
             return _cat;
+        }
+
+        public IServiceProvider BuildServiceProvider(ServiceProviderOptions options)
+        {
+            //此处还要补充Option
+            if (options.ValidateOnBuild)
+            {
+                CheckTypeCanConstruct();
+            }
+            if (options.ValidateScopes)
+            {
+                CheckSingletonLeak();
+            }
+            return _cat;
+        }
+
+        private void CheckSingletonLeak()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void CheckTypeCanConstruct()
+        {
+            var allTypes = _cat._registries.Keys.ToList();
+            var constructors = from x in allTypes select x.GetConstructors();
+            var hset = new HashSet<Type>();
+            foreach(var constructorDetails in constructors)
+            {
+                var parameterList = from x in constructorDetails select x.GetParameters();
+                 
+                foreach (var param in parameterList)
+                {
+                    var tmp = from item in param select item.ParameterType;
+                    hset.AddRange(tmp);
+                }
+            }
+            foreach(var typeInConstructor in hset)
+            {
+                if (!_cat._registries.ContainsKey(typeInConstructor))
+                {
+                    throw new InvalidOperationException($@"type {typeInConstructor.FullName} is not registered");
+                }
+            }
         }
 
         public CatBuilder Register(Assembly assembly)
