@@ -13,7 +13,7 @@ namespace MyContainer
         static void Main(string[] args)
         {
 
-            UsingContainerDotNetWay();
+            PreventLeak();
             Console.ReadLine();
 
 
@@ -238,6 +238,61 @@ namespace MyContainer
                 }
             }
         }
+
+ /*     结构暂时不支持此种方式  
+  *     static void PreventLeakInCat()
+        {
+            var options = new ServiceProviderOptions()
+            {
+                ValidateOnBuild = true,//build的时候就做检查，而不是运行时才报错
+                ValidateScopes = true,//true防止singleton 里引用Scope的对象。
+
+            };
+            var serviceCollection = new ServiceCollection()
+                .AddSingleton(typeof(IFooBar<,>), typeof(FooBar<,>))
+                .AddScoped<IBar, Bar>()
+                .AddScoped<IFoo, Foo>();
+            var factory = new CatServiceProviderFactory();
+            var builder = factory.CreateBuilder(serviceCollection).Register(Assembly.GetEntryAssembly());
+            var root = factory.CreateServiceProvider(builder, options);
+            var sp = root.CreateScope().ServiceProvider;
+            void ResoleService<T>(IServiceProvider serviceProvider)
+            {
+                var isRootContainer = root == serviceProvider ? "Yes" : "No";
+                try
+                {
+                    serviceProvider.GetService<T>();
+                    Console.WriteLine($@"Ok, {typeof(T).Name}; Root:{isRootContainer}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($@"fail, {typeof(T).Name}; Root:{isRootContainer}");
+                    Console.WriteLine($"Error: {ex.Message}");
+                }
+            }
+            void ResoleServiceG(IServiceProvider serviceProvider, Type serviceType)
+            {
+                var isRootContainer = root == serviceProvider ? "Yes" : "No";
+                try
+                {
+                    serviceProvider.GetService(serviceType);
+                    Console.WriteLine($@"Ok, {serviceType.Name}; Root:{isRootContainer}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($@"fail, {serviceType.Name}; Root:{isRootContainer}");
+                    Console.WriteLine($"Error: {ex.Message}");
+                }
+            }
+            ResoleService<IFoo>(sp);
+            //失败，是因为IFooBar是root容器上的单例，按上面的注册，它依赖Scoped的IFoo和IBar， 如此会引发内存泄漏
+            ResoleServiceG(sp, typeof(IFooBar<IFoo, IBar>));
+            //失败，是因为IFoo是Scoped的，而root是根容器，根容器不解析Scoped注册的对象。
+            ResoleService<IFoo>(root);
+            //失败，是因为IFooBar是root容器上的单例，按上面的注册，它依赖Scoped的IFoo和IBar， 如此会引发内存泄漏
+            ResoleServiceG(root, typeof(IFooBar<IFoo, IBar>));
+
+        }*/
     }
 
     class SingletonService

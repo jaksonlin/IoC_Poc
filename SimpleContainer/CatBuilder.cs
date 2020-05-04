@@ -29,45 +29,47 @@ namespace SimpleContainer
         public IServiceProvider BuildServiceProvider(ServiceProviderOptions options)
         {
             //此处还要补充Option
-            if (options.ValidateOnBuild)
+/*            if (options.ValidateOnBuild)
             {
                 CheckTypeCanConstruct();
             }
             if (options.ValidateScopes)
             {
                 CheckSingletonLeak();
-            }
+            }*/
             return _cat;
         }
 
-        private void CheckSingletonLeak()
+/*        private void CheckSingletonLeak()
         {
-            throw new NotImplementedException();
+            var rootSingle = _cat._registries.Values.Where(x => x.LifeTime == LifeTime.Root).Select(x => x.ServiceType);
+            var rootSingleImplementation = null;//TODO，此处的问题是，当前的ServiceRegistry并不清楚该接口对应的实现类型，从而无法提取构造函数。
+            var rootParameterList = from t in rootSingleImplementation let constructs = t.GetConstructors() from c in constructs let parameters = c.GetParameters() from p in parameters select new { TypeName=t.FullName, ConstructParam=p.ParameterType};
+            var scopeSingle = _cat._registries.Values.Where(x => x.LifeTime == LifeTime.Self).Select(x => x.ServiceType);
+            foreach (var typeInConstructor in rootParameterList)
+            {
+                if (scopeSingle.Contains(typeInConstructor.ConstructParam))
+                {
+                    throw new InvalidOperationException($@"Cannot consume scoped service {typeInConstructor} from singleton {typeInConstructor.TypeName}");
+                }
+            }
         }
 
         private void CheckTypeCanConstruct()
         {
             var allTypes = _cat._registries.Keys.ToList();
-            var constructors = from x in allTypes select x.GetConstructors();
-            var hset = new HashSet<Type>();
-            foreach(var constructorDetails in constructors)
-            {
-                var parameterList = from x in constructorDetails select x.GetParameters();
-                 
-                foreach (var param in parameterList)
-                {
-                    var tmp = from item in param select item.ParameterType;
-                    hset.AddRange(tmp);
-                }
-            }
-            foreach(var typeInConstructor in hset)
+            var rootSingleImplementation = null;//TODO，此处的问题是，当前的ServiceRegistry并不清楚该接口对应的实现类型，从而无法提取构造函数。
+
+            var parameterList = from t in allTypes let constructs = t.GetConstructors() from c in constructs let parameters = c.GetParameters() from p in parameters select p.ParameterType;
+
+            foreach (var typeInConstructor in parameterList)
             {
                 if (!_cat._registries.ContainsKey(typeInConstructor))
                 {
                     throw new InvalidOperationException($@"type {typeInConstructor.FullName} is not registered");
                 }
             }
-        }
+        }*/
 
         public CatBuilder Register(Assembly assembly)
         {

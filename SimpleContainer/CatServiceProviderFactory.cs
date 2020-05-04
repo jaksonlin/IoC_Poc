@@ -33,5 +33,9 @@ namespace SimpleContainer
         {
             return containerBuilder.BuildServiceProvider();
         }
+        public IServiceProvider CreateServiceProvider(CatBuilder containerBuilder, ServiceProviderOptions options)
+        {
+            return containerBuilder.BuildServiceProvider(options);
+        }
     }
 }
