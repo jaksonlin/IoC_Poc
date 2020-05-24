@@ -1,0 +1,1 @@
+﻿请在属性栏中保证该文件为嵌入的资源文件。该资源文件需要用EmbbedFileProvider读取，但是依然可以由同一个FileManager进行【业务IO】管理。
