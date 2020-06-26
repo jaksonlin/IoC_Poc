@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.IO;
 using System.Reflection;
@@ -20,6 +21,10 @@ namespace FileProviderConcept
     {
         static async Task Main(string[] args)
         {
+            await FsWatcherFromProvider();
+        }
+        static async Task Concept()
+        {
             static void Print(int layer, string name) => Console.WriteLine($@"{new string(' ', layer * 4)}{name}");
             var container = new ServiceCollection()
                 .AddSingleton<IFileProvider>(new PhysicalFileProvider(@"f:\checktest"))
@@ -37,12 +42,11 @@ namespace FileProviderConcept
             }
             Console.ReadLine();
         }
-
         static async Task FsWatcherFromProvider()
         {
             using (var fileProvider = new PhysicalFileProvider(@"f:\checktest")) {
                 string origin = null;
-                ChangToken.OnChange(() => fileProvider.Watch("test.txt"), CallBack);
+                ChangeToken.OnChange(() => fileProvider.Watch("test.txt"), CallBack);
                 while (true)
                 {
                     File.WriteAllText(@"f:\checktest\test.txt", DateTime.Now.ToString());
