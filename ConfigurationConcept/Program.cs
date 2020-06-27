@@ -9,45 +9,34 @@ using System.Runtime.Serialization;
 
 namespace ConfigurationConcept
 {
+    class VersionOptions
+    {
+        public int Main { get; set; }
+        public int SubVersion { get; set; }
+    }
     class FormatOptions
     {
-        public DateTimeFormatOptions DateTime { get; private set; }
-        public CurrencyFormatOptions Currency { get; private set; }
-        public FormatOptions(IConfiguration config)
-        {
-            //Format:DateTime的原因是：原本传入来的IConfiguration应该是config.GetSection("Format")
-            //但在容器当中，我们如果将IConfiguration映射为config.GetSeciont("Format")才可以。
-            //this.DateTime = new DateTimeFormatOptions(config.GetSection("Format:DateTime"));
-            //this.Currency = new CurrencyFormatOptions(config.GetSection("Format:Currency"));
-            //此处能这样用就是已经在容器里将IConfiguration映射为config.GetSectio("Format")
-            this.DateTime = new DateTimeFormatOptions(config.GetSection("DateTime"));
-            this.Currency = new CurrencyFormatOptions(config.GetSection("Currency"));
-        }
+        public DateTimeFormatOptions DateTime { get;  set; }
+        public CurrencyFormatOptions Currency { get;  set; }
+
     }
     class CurrencyFormatOptions
     {
-        public String Digits { get; private set; }
-        public String Symbol { get; private set; }
-        public CurrencyFormatOptions(IConfiguration config)
-        {
-            this.Digits = config["Digits"];
-            this.Symbol = config["Symbol"];
-        }
+        public String Digits { get;  set; }
+        public String Symbol { get;  set; }
+
     }
     class DateTimeFormatOptions
     {
-        public String LongDatePattern { get; private set; }
-        public String LongTimePattern { get; private set; }
-        public DateTimeFormatOptions(IConfiguration config)
-        {
-            this.LongDatePattern = config["LongDatePattern"];
-            this.LongTimePattern = config["LongTimePattern"];
-        }
+        public String LongDatePattern { get;  set; }
+        public String LongTimePattern { get;  set; }
+
     }
     class Program
     {
-        static void Main(string[] args)
+        static void MemorySource()
         {
+
             // prepare data for the Factory: IConfigurationBuilder
             var source = new Dictionary<String, String>()
             {
@@ -59,19 +48,51 @@ namespace ConfigurationConcept
 
             };
             // Create factory, manage the factory's configuration source
-            var config = new ConfigurationBuilder().Add(new MemoryConfigurationSource() { InitialData = source }).Build();
+            FormatOptions option = new ConfigurationBuilder()
+                .Add(new MemoryConfigurationSource() { InitialData = source }).Build()
+                .GetSection("Format")
+                .Get<FormatOptions>();
             // Create Container 
             var container = new ServiceCollection()
-                .AddSingleton<IConfiguration>(config.GetSection("Format"))
-                .AddScoped<FormatOptions, FormatOptions>()
+                .AddSingleton<FormatOptions>(option)
                 .BuildServiceProvider();
-            using(var p = container.CreateScope())
+            using (var p = container.CreateScope())
             {
                 var result = p.ServiceProvider.GetRequiredService<FormatOptions>();
                 Console.WriteLine(result.DateTime.LongDatePattern);
                 Console.WriteLine(result.Currency.Digits);
             }
 
+        }
+
+        static void JsonSource()
+        {
+
+            var configStr = "stage";
+            // Create factory, manage the factory's configuration source
+            var optionFactory = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", false)
+                .AddJsonFile($@"appsettings.{configStr}.json", true).Build();
+            var formatOption = optionFactory.GetSection("Format").Get<FormatOptions>();
+            var versionOption = optionFactory.GetSection("Version").Get<VersionOptions>();
+            // Create Container 
+            var container = new ServiceCollection()
+                .AddSingleton<FormatOptions>(formatOption)
+                .AddSingleton<VersionOptions>(versionOption)
+                .BuildServiceProvider();
+            using (var p = container.CreateScope())
+            {
+                var result = p.ServiceProvider.GetRequiredService<FormatOptions>();
+                Console.WriteLine(result.DateTime.LongDatePattern);
+                Console.WriteLine(result.Currency.Digits);
+                var verInfo = p.ServiceProvider.GetRequiredService<VersionOptions>();
+                Console.WriteLine($@"{verInfo.Main}.{verInfo.SubVersion}");
+            }
+
+        }
+        static void Main(string[] args)
+        {
+            JsonSource();
             Console.ReadLine();
         }
     }
