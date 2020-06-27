@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -71,8 +72,13 @@ namespace ConfigurationConcept
             var configStr = "stage";
             // Create factory, manage the factory's configuration source
             var optionFactory = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", false)
+                .AddJsonFile("appsettings.json", false, reloadOnChange : true)
                 .AddJsonFile($@"appsettings.{configStr}.json", true).Build();
+            ChangeToken.OnChange(() => optionFactory.GetReloadToken(), () =>
+              {
+                  var newVersion = optionFactory.GetSection("Version").Get<VersionOptions>();
+                  Console.WriteLine($@"{newVersion.Main}.{newVersion.SubVersion}");
+              });
             var formatOption = optionFactory.GetSection("Format").Get<FormatOptions>();
             var versionOption = optionFactory.GetSection("Version").Get<VersionOptions>();
             // Create Container 
