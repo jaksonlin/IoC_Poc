@@ -19,7 +19,7 @@ namespace ConfigurationConcept
             //但在容器当中，我们如果将IConfiguration映射为config.GetSeciont("Format")才可以。
             //this.DateTime = new DateTimeFormatOptions(config.GetSection("Format:DateTime"));
             //this.Currency = new CurrencyFormatOptions(config.GetSection("Format:Currency"));
-
+            //此处能这样用就是已经在容器里将IConfiguration映射为config.GetSectio("Format")
             this.DateTime = new DateTimeFormatOptions(config.GetSection("DateTime"));
             this.Currency = new CurrencyFormatOptions(config.GetSection("Currency"));
         }
