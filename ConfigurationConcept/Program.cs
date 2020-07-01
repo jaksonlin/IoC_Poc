@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
@@ -98,8 +99,39 @@ namespace ConfigurationConcept
         }
         static void Main(string[] args)
         {
-            JsonSource();
+            OptionPatternMultiple();
             Console.ReadLine();
+        }
+
+        static void OptionPattern()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.stage.json")
+                .Build();
+
+            var profile = new ServiceCollection()
+                .AddOptions()
+                .Configure<FormatOptions>(configuration.GetSection("Format"))
+                .BuildServiceProvider()
+                .GetRequiredService<IOptions<FormatOptions>>().Value;
+            Console.WriteLine($@"{profile.Currency.Digits}#{profile.DateTime.LongDatePattern}");
+        }
+        static void OptionPatternMultiple ()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.multiple.json")
+                .Build();
+
+            var serviceProvider = new ServiceCollection()
+                .AddOptions()
+                .Configure<FormatOptions>("production", configuration.GetSection("FormatProduction"))
+                .Configure<FormatOptions>("debug", configuration.GetSection("FormatDebug"))
+                .BuildServiceProvider();
+            var optionAccessor = serviceProvider.GetRequiredService<IOptionsSnapshot<FormatOptions>>();
+            var debugInfo = optionAccessor.Get("debug");
+            var productInfo = optionAccessor.Get("production");
+            Console.WriteLine($@"{debugInfo.Currency.Digits}#{debugInfo.DateTime.LongDatePattern}");
+            Console.WriteLine($@"{productInfo.Currency.Digits}#{productInfo.DateTime.LongDatePattern}");
         }
     }
 }
