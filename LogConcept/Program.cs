@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.DiagnosticAdapter;
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 
 namespace LogConcept
 {
@@ -7,7 +11,7 @@ namespace LogConcept
     {
         static void Main(string[] args)
         {
-            TraceSourceTest2();
+            LogSourceCollector();
             Console.ReadLine();
         }
 
@@ -42,8 +46,58 @@ namespace LogConcept
             var eventId = 1;
             Array.ForEach(eventType, it => source.TraceEvent(it, eventId++, $"this is a {it} message"));
         }
-    }
 
+        static void EventSourceTest()
+        {
+            DatabaseSource.Instance.OnCommandExecute(CommandType.Text, "SELECT * FROM T_USER");
+        }
+        //将日志对象进行转发，并交由观察者决定如何处置
+        static void LogObserver()
+        {
+            DiagnosticListener.AllListeners.Subscribe(new Observer<DiagnosticListener>(listener=> {
+            if (listener.Name == "my-register-listener")
+            {
+                listener.Subscribe(new Observer<KeyValuePair<string, object>>(kv => {
+                    Console.WriteLine($"Event name: {kv.Key}");
+                    dynamic payload = kv.Value;
+                    Console.WriteLine($"Payload name: {payload.CommandType}");
+
+                    Console.WriteLine($"Payload name: {payload.CommandText}");
+                }));
+                }
+            }));
+            var source = new DiagnosticListener("my-register-listener");
+            if (source.IsEnabled("CommandExecution"))
+            {
+                source.Write("CommandExecution", new { CommandType = CommandType.Text, CommandText = "Hello World" });
+            }
+        }
+
+        static void LogSourceCollector()
+        {
+            DiagnosticListener.AllListeners.Subscribe(new Observer<DiagnosticListener>(listener => {
+                if (listener.Name == "my-register-listener")
+                {
+                    listener.SubscribeWithAdapter(new DatabseSourceCollector());
+                }
+            }));
+            var source = new DiagnosticListener("my-register-listener");
+            if (source.IsEnabled("CommandExecution"))
+            {
+                source.Write("CommandExecution", new { CommandType = CommandType.Text, CommandText = "Hello World" });
+            }
+        }
+
+        
+    }
+    [EventSource(Name ="abdcefg")]
+    public sealed class DatabaseSource : EventSource
+    {
+        public static readonly DatabaseSource Instance = new DatabaseSource();
+        private DatabaseSource() { }
+        [Event(1)]
+        public void OnCommandExecute(CommandType commandType, string commandText) => WriteEvent(1, commandType, commandText);
+    }
     public class ConsoleTraceListener : TraceListener
     {
         public override void Write(string message)
@@ -55,5 +109,42 @@ namespace LogConcept
         {
             Console.WriteLine(message);
         }
+    }
+
+    public class Observer<T> : IObserver<T>
+    {
+        private Action<T> _onNext;
+        
+        public Observer(Action<T> next)
+        {
+            this._onNext = next;
+        }
+
+        public void OnCompleted()
+        {
+            
+        }
+
+        public void OnError(Exception error)
+        {
+            
+        }
+
+        public void OnNext(T value)
+        {
+            _onNext(value);
+        }
+    }
+
+    public class DatabseSourceCollector
+    {
+        [DiagnosticName("CommandExecution")]
+        public void OnCommandExecute(CommandType commandType, string commandText)
+        {
+            Console.WriteLine($"Event Name: CommandExecution");
+            Console.WriteLine($"Event Name: {commandType}");
+            Console.WriteLine($"Event Name: {commandText}");
+        }
+
     }
 }
