@@ -8,7 +8,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleContainer", "SimpleCo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileProviderConcept", "FileProviderConcept\FileProviderConcept.csproj", "{6707272C-22E3-4117-9B04-7F14D209A230}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationConcept", "ConfigurationConcept\ConfigurationConcept.csproj", "{0D7C5468-9BA5-4067-8D4C-65FB8A958ED9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConfigurationConcept", "ConfigurationConcept\ConfigurationConcept.csproj", "{0D7C5468-9BA5-4067-8D4C-65FB8A958ED9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogConcept", "LogConcept\LogConcept.csproj", "{95A5A2A8-8AA8-4A7E-89DC-EFD2B9BDDE57}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{0D7C5468-9BA5-4067-8D4C-65FB8A958ED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D7C5468-9BA5-4067-8D4C-65FB8A958ED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D7C5468-9BA5-4067-8D4C-65FB8A958ED9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95A5A2A8-8AA8-4A7E-89DC-EFD2B9BDDE57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95A5A2A8-8AA8-4A7E-89DC-EFD2B9BDDE57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95A5A2A8-8AA8-4A7E-89DC-EFD2B9BDDE57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95A5A2A8-8AA8-4A7E-89DC-EFD2B9BDDE57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
